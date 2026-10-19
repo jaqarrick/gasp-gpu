@@ -1,0 +1,17 @@
+{
+    "fp32_fma_latency_cycles": 4,
+    "fp64_fma_latency_cycles": 8,
+    "int_latency_cycles": 5,
+    "sfu_latency_cycles": 22,
+    "L1_hit_latency_cycles": 33,
+    "L2_hit_latency_cycles": 150,
+    "DRAM_latency_cycles": 400,
+    "L1_size_bytes": 262144,
+    "L2_size_bytes": 67108864,
+    "DRAM_bandwidth_bytes_per_sec": 7.1e12,
+    "departure_delay_cycles": 4,
+    "launch_overhead_seconds": 5e-6,
+    "clock_rate_Hz": 2.1e9,
+    "sync_cost_gamma": 64,
+    "bank_conflict_penalty_cycles": 2
+}
