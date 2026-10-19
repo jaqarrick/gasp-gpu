@@ -1,6 +1,7 @@
 from rich.console import Console
 from rich.table import Table
 
+
 class Logger:
     def __init__(self, verbose: bool = False):
         self.err = Console(stderr=True)

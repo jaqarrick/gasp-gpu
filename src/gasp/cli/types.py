@@ -1,6 +1,7 @@
 # types.py
 from dataclasses import dataclass
 
+
 @dataclass
 class Args:
     input: str

@@ -1,5 +1,6 @@
 # gasp/__main__.py
-from gasp.cli import main
 import sys
+
+from gasp.cli import main
 
 sys.exit(main())

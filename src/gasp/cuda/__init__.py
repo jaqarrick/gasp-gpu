@@ -1,8 +1,10 @@
-from gasp.logger import Logger
-import sys
-import subprocess
 import re
 import shutil
+import subprocess
+import sys
+
+from gasp.logger import Logger
+
 REQUIRED = ["nvcc", "nvdisasm", "cuobjdump"]
 
 class Extractor:
@@ -22,7 +24,7 @@ class Extractor:
     def compile(self):
         cmd = ["nvcc", "-cubin", f"-arch={self.arch}", self.input_file, "-o", self.cubin_path]
         self.logger.info(f"Compiling: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, check=False, text=True)
         if result.returncode != 0:
             self.logger.error(f"nvcc failed:\n{result.stderr}")
             sys.exit(1)
@@ -30,7 +32,7 @@ class Extractor:
     def disassemble(self) -> str:
         result = subprocess.run(
             ["nvdisasm", self.cubin_path],
-            capture_output=True, text=True
+            capture_output=True, check=False, text=True
         )
 
         if result.returncode != 0:
@@ -41,7 +43,7 @@ class Extractor:
     def get_cfg(self) -> str:
         result = subprocess.run(
             ["nvdisasm", "-cfg", self.cubin_path],
-            capture_output=True, text=True
+            capture_output=True, check=False, text=True
         )
         if result.returncode != 0:
             self.logger.error(f"nvdisasm -cfg failed:\n{result.stderr}")
@@ -51,7 +53,7 @@ class Extractor:
     def get_resource_usage(self) -> dict:
         result = subprocess.run(
             ["cuobjdump", "-res-usage", self.cubin_path],
-            capture_output=True, text=True
+            capture_output=True, check=False, text=True
         )
         if result.returncode != 0:
             self.logger.error(f"cuobjdump failed:\n{result.stderr}")

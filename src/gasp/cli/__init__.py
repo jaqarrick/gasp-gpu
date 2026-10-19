@@ -1,15 +1,15 @@
-#!/usr/bin/env python3
 import argparse
-import json
-import sys
-import subprocess
 import math
 import os
+import sys
+
 from gasp import __version__
-from .constants import DEFAULT_PROBLEM_SIZE, DEFAULT_BLOCK_SIZE, GPU_TO_ARCH
-from .types import Args
+from gasp.cuda import Extractor
 from gasp.logger import Logger
-from gasp.cuda import  Extractor
+
+from .constants import DEFAULT_BLOCK_SIZE, DEFAULT_PROBLEM_SIZE, GPU_TO_ARCH
+from .types import Args
+
 
 def cu_file(path: str) -> str:
     if not path.endswith(".cu"):
@@ -76,7 +76,7 @@ def main():
         ["Parameter", "Value"],
         [
             ["GPU", str(gpu or "Not provided")],
-            ["GPU", str(gpu or "Not provided")],
+            ["Profile", str(profile or "Not provided")],
             ["Input", input_file],
             ["Block Size", str(block_size)],
             ["Grid Size", str(grid_size)],
