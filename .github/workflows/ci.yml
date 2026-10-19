@@ -7,12 +7,14 @@ on:
     paths-ignore:
       - 'README.md'
       - 'benchmarks/**'
+      - 'docs/**'
   pull_request:
     branches:
       - main
     paths-ignore:
       - 'README.md'
       - 'benchmarks/**'
+      - 'docs/**'
 
 env:
   PYTHON_VERSION: '3.12'
