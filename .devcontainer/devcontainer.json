@@ -1,0 +1,20 @@
+{
+    "name": "GASP",
+    "build": {
+        "dockerfile": "../Dockerfile"
+    },
+    "remoteEnv": {
+        "PYTHONPATH": "/workspaces/gasp/src"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "charliermarsh.ruff"
+            ]
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {}
+    }
+}

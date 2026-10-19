@@ -5,7 +5,7 @@ PY := PYTHONPATH=src $(VENV)/bin/python
 IMAGE := gasp
 ARGS ?=
 
-.PHONY: all build install run test lint clean docker-clean build docker-run help
+.PHONY: all build install run test lint clean docker-clean docker-run help
 
 $(VENV):
 	$(PYTHON) -m venv $(VENV)
@@ -27,7 +27,10 @@ build:
 	docker build -t $(IMAGE) .
 
 docker-run:
-	docker run --rm -v $(PWD)/data:/app/data $(IMAGE) $(ARGS)
+	docker run --rm \
+		-v $(PWD)/benchmarks:/workspace/benchmarks \
+		-v $(PWD)/hardware:/workspace/hardware \
+		$(IMAGE) $(ARGS)
 
 clean:
 	rm -rf $(VENV) __pycache__ src/gasp/__pycache__
