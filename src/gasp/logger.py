@@ -3,26 +3,26 @@ from rich.table import Table
 
 
 class Logger:
-    def __init__(self, verbose: bool = False):
+    def __init__(self, verbose: bool = False) -> None:
         self.err = Console(stderr=True)
         self.out = Console()
         # currently info only prints in verbose mode, but could change later
         self.verbose = verbose 
 
-    def info(self, msg: str):
+    def info(self, msg: str) -> None:
         if self.verbose:
             self.err.print(f"[blue]ℹnfo[/] {msg}")
 
-    def success(self, msg: str):
+    def success(self, msg: str) -> None:
         self.out.print(f"[green]success[/] {msg}")
 
-    def error(self, msg: str):
+    def error(self, msg: str) -> None:
         self.err.print(f"[red]error[/] {msg}")
 
-    def warn(self, msg: str):
+    def warn(self, msg: str) -> None:
         self.err.print(f"[yellow]warn[/] {msg}")
 
-    def table(self, title: str, columns: list[str], rows: list[list[str]], force=False):
+    def table(self, title: str, columns: list[str], rows: list[list[str]], force: bool = False) -> None:
         t = Table(title=title)
         for col in columns:
             t.add_column(col)

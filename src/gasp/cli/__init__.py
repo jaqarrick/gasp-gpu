@@ -4,7 +4,7 @@ import os
 import sys
 
 from gasp import __version__
-from gasp.cuda import Extractor
+from gasp.cuda import CUDAExtractor
 from gasp.logger import Logger
 
 from .constants import DEFAULT_BLOCK_SIZE, DEFAULT_PROBLEM_SIZE, GPU_TO_ARCH
@@ -38,7 +38,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main():
+def main() -> None:
     parser = build_parser()
     raw = parser.parse_args()
     args = Args(**vars(raw))
@@ -87,7 +87,7 @@ def main():
 
     logger.info(f"Extracting SASS and resource usage from {input_file}")
 
-    extractor = Extractor(input_file, arch, logger)
+    extractor = CUDAExtractor(input_file, arch, logger)
     result = extractor.process()
 
     print(result["resources"])

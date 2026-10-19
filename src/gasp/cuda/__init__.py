@@ -2,26 +2,36 @@ import re
 import shutil
 import subprocess
 import sys
+from typing import TypedDict
 
 from gasp.logger import Logger
 
-REQUIRED = ["nvcc", "nvdisasm", "cuobjdump"]
+REQUIRED: list[str] = ["nvcc", "nvdisasm", "cuobjdump"]
+# kernel name -> {"reg" | "shared" | "stack" | "local": value}
+ResourceUsage = dict[str, dict[str, int]]
 
-class Extractor:
-    def __init__(self, input_file: str, arch: str, logger: Logger):
+
+class KernelInfo(TypedDict):
+    raw_sass: str
+    raw_cfg: str
+    resources: ResourceUsage
+
+
+class CUDAExtractor:
+    def __init__(self, input_file: str, arch: str, logger: Logger) -> None:
         self.input_file = input_file
         self.logger = logger
         self.arch = arch
         self.cubin_path = input_file.replace(".cu", ".cubin")
 
-    def check_packages(self):
+    def check_packages(self) -> None:
         missing = [t for t in REQUIRED if not shutil.which(t)]
         if missing:
             self.logger.error(f"Missing packages: {', '.join(missing)}")
             self.logger.error("Install the CUDA Toolkit (nvidia-cuda-toolkit)")
             sys.exit(1)
 
-    def compile(self):
+    def compile(self) -> None:
         cmd = ["nvcc", "-cubin", f"-arch={self.arch}", self.input_file, "-o", self.cubin_path]
         self.logger.info(f"Compiling: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, check=False, text=True)
@@ -50,7 +60,7 @@ class Extractor:
             sys.exit(1)
         return result.stdout
 
-    def get_resource_usage(self) -> dict:
+    def get_resource_usage(self) -> ResourceUsage:
         result = subprocess.run(
             ["cuobjdump", "-res-usage", self.cubin_path],
             capture_output=True, check=False, text=True
@@ -59,8 +69,8 @@ class Extractor:
             self.logger.error(f"cuobjdump failed:\n{result.stderr}")
             sys.exit(1)
 
-        kernels = {}
-        current_kernel = None
+        kernels: ResourceUsage = {}
+        current_kernel: str | None = None
         for line in result.stdout.splitlines():
             fn_match = re.search(r"Function\s+(\S+)", line)
             if fn_match:
@@ -75,7 +85,7 @@ class Extractor:
         return kernels
 
 
-    def process(self):
+    def process(self) -> KernelInfo:
         self.logger.info("Checking CUDA toolkit")
         self.check_packages()
         self.logger.info("Compiling CUDA to cubin")
@@ -86,7 +96,7 @@ class Extractor:
         cfg = self.get_cfg()
         self.logger.info("Extracting kernel resource usage")
         resources = self.get_resource_usage()
-        kernel_info = {
+        kernel_info: KernelInfo = {
             "raw_sass": sass,
             "raw_cfg": cfg,
             "resources": resources
