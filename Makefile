@@ -51,7 +51,7 @@ docker-clean:
 
 
 help:
-	@echo "make setup                       - create venv and install deps"
+	@echo "make install                       - create venv and install deps"
 	@echo "make run ARGS='...'              - run locally"
 	@echo "make test                        - run tests"
 	@echo "make lint                        - lint Python code"
