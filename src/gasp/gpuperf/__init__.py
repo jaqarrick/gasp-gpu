@@ -1,4 +1,4 @@
-# This module contains the GPUPerf formula for speedup  
+# This module contains the GPUPerf formula for speedup
 from gasp.logger import Logger
 
 from .types import (
@@ -10,7 +10,14 @@ from .types import (
 
 
 class GPUPerf:
-    def __init__(self, k_params: KernelParameters, o_params: OccupancyParams, l_params: LaunchParameters, h_params: HardwareParameters, logger: Logger) -> None:
+    def __init__(
+        self,
+        k_params: KernelParameters,
+        o_params: OccupancyParams,
+        l_params: LaunchParameters,
+        h_params: HardwareParameters,
+        logger: Logger,
+    ) -> None:
         self.k = k_params
         self.l = l_params
         self.h = h_params
@@ -34,12 +41,27 @@ class GPUPerf:
         w_parallel = inst_per_sm * effective_throughput
 
         # w_serial = o_sync + o_sfu + o_cfdiv + o_bank
-        f_sync = h.sync_factor * h.dram_latency * (k.mem_inst_count / k.total_inst_count)
+        f_sync = (
+            h.sync_factor * h.dram_latency * (k.mem_inst_count / k.total_inst_count)
+        )
         o_sync = ((k.sync_inst_count * o.total_warps) / o.active_sms) * f_sync
 
-        f_sfu = min([max([(k.sfu_inst_count / k.total_inst_count) - (h.sfu_width / h.simd_width), 0]), 1])
+        f_sfu = min(
+            [
+                max(
+                    [
+                        (k.sfu_inst_count / k.total_inst_count)
+                        - (h.sfu_width / h.simd_width),
+                        0,
+                    ]
+                ),
+                1,
+            ]
+        )
         sfu_throughput = h.warp_size / h.sfu_width
-        o_sfu = ((k.sfu_inst_count * o.total_warps) / o.active_sms) * sfu_throughput * f_sfu
+        o_sfu = (
+            ((k.sfu_inst_count * o.total_warps) / o.active_sms) * sfu_throughput * f_sfu
+        )
 
         # todo: implement our own model for overhead / bank conflict overhead since GPUPerf uses emulation
         o_cfdiv = k.divergent_inst_count * h.average_inst_latency
@@ -52,7 +74,9 @@ class GPUPerf:
     def _get_t_mem(self):
         k = self.k
         o = self.o
-        mem_requests_per_sm = (k.mem_inst_count * o.total_warps) / (o.active_sms * o.itmlp)
+        mem_requests_per_sm = (k.mem_inst_count * o.total_warps) / (
+            o.active_sms * o.itmlp
+        )
         amat = self._get_amat()
         return mem_requests_per_sm * amat
 
@@ -60,13 +84,16 @@ class GPUPerf:
         o = self.o
         overlap_zeta = 1 if o.cwp <= o.mwp else 0
         N = o.active_warps
-        f_overlap = (N - overlap_zeta)/N
+        f_overlap = (N - overlap_zeta) / N
         t_overlap: float = min([t_comp * f_overlap, t_memory])
         return t_overlap
 
     def _get_amat(self):
         # note: average memory access time involves cache hit ratio, which will be performed in a different module
-        average_dram_latency = self.h.dram_latency + (self.o.average_trans_warp - 1) * self.h.departure_delay
+        average_dram_latency = (
+            self.h.dram_latency
+            + (self.o.average_trans_warp - 1) * self.h.departure_delay
+        )
         miss_ratio = 1 - self.o.cache_hit_ratio
         amat = average_dram_latency * miss_ratio + self.h.cache_hit_latency
         return amat

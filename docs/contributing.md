@@ -25,3 +25,20 @@ This project includes a [dev container](https://containers.dev/) configuration f
 docker build -t gasp-dev .
 docker run -it --rm -v $(PWD):/app gasp-dev /bin/bash
 ```
+
+## Commit Conventions & Hooks
+
+This repo uses [pre-commit](https://pre-commit.com/) to enforce formatting, linting, and commit message style. `make install` sets up the hooks; to install them manually, run `pre-commit install`.
+
+On every commit:
+
+- **pre-commit**: `ruff check --fix` and `ruff format` run on staged files. If they modify anything, the commit stops — `git add` the changes and commit again.
+- **commit-msg**: the message must follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+  ```
+  type(optional scope): subject
+  ```
+
+  Allowed types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`, `build`, `perf`, `style`, `revert`.
+
+To run every hook against the whole repo: `make pre-commit`.

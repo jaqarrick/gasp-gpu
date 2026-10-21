@@ -32,7 +32,14 @@ class CUDAExtractor:
             sys.exit(1)
 
     def compile(self) -> None:
-        cmd = ["nvcc", "-cubin", f"-arch={self.arch}", self.input_file, "-o", self.cubin_path]
+        cmd = [
+            "nvcc",
+            "-cubin",
+            f"-arch={self.arch}",
+            self.input_file,
+            "-o",
+            self.cubin_path,
+        ]
         self.logger.info(f"Compiling: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, check=False, text=True)
         if result.returncode != 0:
@@ -41,19 +48,20 @@ class CUDAExtractor:
 
     def disassemble(self) -> str:
         result = subprocess.run(
-            ["nvdisasm", self.cubin_path],
-            capture_output=True, check=False, text=True
+            ["nvdisasm", self.cubin_path], capture_output=True, check=False, text=True
         )
 
         if result.returncode != 0:
             self.logger.error(f"nvdisasm failed:\n{result.stderr}")
             sys.exit(1)
         return result.stdout
-    
+
     def get_cfg(self) -> str:
         result = subprocess.run(
             ["nvdisasm", "-cfg", self.cubin_path],
-            capture_output=True, check=False, text=True
+            capture_output=True,
+            check=False,
+            text=True,
         )
         if result.returncode != 0:
             self.logger.error(f"nvdisasm -cfg failed:\n{result.stderr}")
@@ -63,7 +71,9 @@ class CUDAExtractor:
     def get_resource_usage(self) -> ResourceUsage:
         result = subprocess.run(
             ["cuobjdump", "-res-usage", self.cubin_path],
-            capture_output=True, check=False, text=True
+            capture_output=True,
+            check=False,
+            text=True,
         )
         if result.returncode != 0:
             self.logger.error(f"cuobjdump failed:\n{result.stderr}")
@@ -84,7 +94,6 @@ class CUDAExtractor:
                         kernels[current_kernel][field.lower()] = int(m.group(1))
         return kernels
 
-
     def process(self) -> KernelInfo:
         self.logger.info("Checking CUDA toolkit")
         self.check_packages()
@@ -99,7 +108,7 @@ class CUDAExtractor:
         kernel_info: KernelInfo = {
             "raw_sass": sass,
             "raw_cfg": cfg,
-            "resources": resources
+            "resources": resources,
         }
 
         return kernel_info
