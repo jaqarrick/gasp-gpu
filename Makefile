@@ -16,6 +16,9 @@ install: $(VENV)
 lint:
 	$(PY) -m ruff check src/
 
+lint-fix:
+	$(PY) -m ruff check src/ --fix
+
 test:
 	$(PY) -m pytest tests/ -v
 
@@ -52,4 +55,4 @@ help:
 	@echo ""
 	@echo "Example:"
 	@echo "  make run ARGS='kernel.cu --gpu b200 --verbose'"
-	@echo "  make docker-run ARGS='data/kernel.cu --gpu b200'"
+	@echo "  make docker-run ARGS='benchmarks/custom/example.cu --gpu b200'"
