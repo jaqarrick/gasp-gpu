@@ -7,6 +7,7 @@ from gasp import __version__
 from gasp.common.constants import GPU_TO_ARCH
 from gasp.cuda import CUDAExtractor
 from gasp.logger import Logger
+from gasp.pico import PicoInput, perform_pico_analysis
 
 from .constants import DEFAULT_BLOCK_SIZE, DEFAULT_PROBLEM_SIZE
 from .types import Args
@@ -107,6 +108,32 @@ def main() -> None:
     result = extractor.process()
 
     print(result["resources"])
+
+    pico_results = perform_pico_analysis(
+        PicoInput(
+            logger=logger,
+            grid_size=grid_size,
+            input_file=input_file,
+            block_size=block_size,
+            problem_size=problem_size,
+            bank_count=None,
+            parameters=[],
+        )
+    )
+
+    if pico_results.error:
+        logger.error("PICO error")
+        sys.exit(1)
+    logger.table(
+        "PICO Results",
+        ["Name", "Value"],
+        [
+            ["Bank Conflicts", str(pico_results.bank_conflict_count)],
+            ["Uncoalesced Count", str(pico_results.uncoalesced_count)],
+            ["Active Threads", str(pico_results.active_threads)],
+            ["Memory Access Count", str(pico_results.memory_accesses_count)],
+        ],
+    )
 
 
 if __name__ == "__main__":
