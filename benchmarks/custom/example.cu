@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
   int * a, *b, *c; // arrays at host
   int * ad, *bd, *cd; // arrays at device
   int choice = 0; // 0 means CPU and 1 means GPU
-  int THREADS = 0; // user decides number of threads per block  
+  int THREADS = 0; // user decides number of threads per block
 
 
   // to measure the time
@@ -35,21 +35,21 @@ int main(int argc, char *argv[])
   a = (int *)malloc(num*sizeof(int));
   if(!a){
      printf("Cannot allocate array a with %d elements\n", num);
-     exit(1);	
+     exit(1);
   }
 
 
   b = (int *)malloc(num*sizeof(int));
   if(!b){
      printf("Cannot allocate array b with %d elements\n", num);
-     exit(1);	
+     exit(1);
   }
 
 
   c = (int *)malloc(num*sizeof(int));
   if(!c){
      printf("Cannot allocate array c with %d elements\n", num);
-     exit(1);	
+     exit(1);
   }
 
 
@@ -58,39 +58,39 @@ int main(int argc, char *argv[])
   for( i = 0; i < num; i++)
   {
     a[i] = rand() % num;
-    b[i] = rand() % num; 
+    b[i] = rand() % num;
   }
 
-  // The CPU version   
-  
+  // The CPU version
+
   start = clock(); // start measuring
   for( i = 0; i < num; i++)
 	c[i] = a[i] + b[i];
-  
+
   end = clock();  // end of measuring
   time_taken = ((double)(end-start)) / CLOCKS_PER_SEC;
 
-  printf("CPU time = %lf secs\n", time_taken); 
+  printf("CPU time = %lf secs\n", time_taken);
 
 
   //Now zero C[] in preparation for GPU version
   for( i = 0; i < num; i++)
 	c[i] = 0;
-  
+
 
   // The GPU version
   if(choice){
-      
+
       int numblocks;
       int threadsperblock;
- 
+
       if( (num % THREADS) == 0 )
 	numblocks =num / THREADS ;
-      else 
+      else
       	numblocks = (num/THREADS)>0? (num/THREADS)+1:1 ;
       threadsperblock = THREADS;
 
-      printf("GPU: %d blocks of %d threads each\n", numblocks, threadsperblock);     
+      printf("GPU: %d blocks of %d threads each\n", numblocks, threadsperblock);
 
       //assume a block can have THREADS threads
       dim3 grid(numblocks, 1, 1);
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 
 
       start = clock(); //start measuring time for GPU
- 
+
       //mov a and b to the device
       cudaMemcpy(ad, a, num*sizeof(int), cudaMemcpyHostToDevice);
       cudaMemcpy(bd, b, num*sizeof(int), cudaMemcpyHostToDevice);
@@ -126,17 +126,17 @@ int main(int argc, char *argv[])
       //Launch the kernel
       addvector<<<numblocks , threadsperblock>>>(ad, bd, cd, num);
 
-      //bring data back 
+      //bring data back
       cudaMemcpy(c, cd, num*sizeof(int), cudaMemcpyDeviceToHost);
-      
+
       end = clock();  // end of measuring
       time_taken = ((double)(end - start)) / CLOCKS_PER_SEC;
 
-      printf("GPU time = %lf secs\n", time_taken); 
-  } 
-  
+      printf("GPU time = %lf secs\n", time_taken);
+  }
+
   cudaDeviceSynchronize(); //block host till device is done.
-  
+
   //check the result is correct
   if( choice)
    for(i = 0; i < num; i++)
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
   free(a);
   free(b);
   free(c);
-  
+
   if( choice ){
      cudaFree(ad);
      cudaFree(bd);
@@ -165,5 +165,5 @@ __global__  void addvector(int * a, int * b, int *c, int n)
 
    if (index < n )
 	c[index] = a[index] + b[index];
- 
+
 }

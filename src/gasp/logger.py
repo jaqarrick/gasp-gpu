@@ -7,7 +7,7 @@ class Logger:
         self.err = Console(stderr=True)
         self.out = Console()
         # currently info only prints in verbose mode, but could change later
-        self.verbose = verbose 
+        self.verbose = verbose
 
     def info(self, msg: str) -> None:
         if self.verbose:
@@ -22,7 +22,9 @@ class Logger:
     def warn(self, msg: str) -> None:
         self.err.print(f"[yellow]warn[/] {msg}")
 
-    def table(self, title: str, columns: list[str], rows: list[list[str]], force: bool = False) -> None:
+    def table(
+        self, title: str, columns: list[str], rows: list[list[str]], force: bool = False
+    ) -> None:
         t = Table(title=title)
         for col in columns:
             t.add_column(col)

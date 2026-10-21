@@ -13,7 +13,7 @@ Inputs:
 Function:
 1. Active warps per SM: we can get this limit from our inputs
 2. Get `num_reps` - `num_total_warps / number_active_sms`
-3. Determine MWP (Memory warp parallelism) - using Sim et. al 
+3. Determine MWP (Memory warp parallelism) - using Sim et. al
 4. Determine CWP (Compute Warp parallelism) - same as above
 
 Outputs:
@@ -29,4 +29,3 @@ cwp (float)
 This module is also probably where we will model cache, coalescence, and bank conflicts.
 However, if we are attempting to plug in PICO for these numbers, it will probably be in a separate module
 """
-
