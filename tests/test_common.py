@@ -1,4 +1,4 @@
-from gasp.cli.constants import GPU_TO_ARCH
+from gasp.common.constants import GPU_TO_ARCH
 
 def test_known_gpus():
     assert GPU_TO_ARCH["b200"] == "sm_100"

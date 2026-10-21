@@ -1,14 +1,2 @@
 DEFAULT_BLOCK_SIZE: int = 256
 DEFAULT_PROBLEM_SIZE: int = 1000000
-
-GPU_TO_ARCH: dict[str, str] = {
-    "b200":"sm_100",
-    "b100":"sm_100",
-    "h100":"sm_90",
-    "h200":"sm_90",
-    "a100":"sm_80",
-    "a10":"sm_86",
-    "l40":"sm_89",
-    "v100":"sm_70",
-    "t4":"sm_75",
-}

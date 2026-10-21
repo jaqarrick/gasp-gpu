@@ -4,10 +4,12 @@ import os
 import sys
 
 from gasp import __version__
+from gasp.common.constants import GPU_TO_ARCH
 from gasp.cuda import CUDAExtractor
 from gasp.logger import Logger
+from gasp.parser import getParser
 
-from .constants import DEFAULT_BLOCK_SIZE, DEFAULT_PROBLEM_SIZE, GPU_TO_ARCH
+from .constants import DEFAULT_BLOCK_SIZE, DEFAULT_PROBLEM_SIZE
 from .types import Args
 
 
