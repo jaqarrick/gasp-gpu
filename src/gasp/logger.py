@@ -4,8 +4,8 @@ from rich.table import Table
 
 class Logger:
     def __init__(self, verbose: bool = False) -> None:
-        self.err = Console(stderr=True)
-        self.out = Console()
+        self.err = Console(stderr=True, force_terminal=True)
+        self.out = Console(force_terminal=True)
         # currently info only prints in verbose mode, but could change later
         self.verbose = verbose
 
@@ -25,7 +25,7 @@ class Logger:
     def table(
         self, title: str, columns: list[str], rows: list[list[str]], force: bool = False
     ) -> None:
-        t = Table(title=title)
+        t = Table(title=title.upper(), title_style="bold cyan")
         for col in columns:
             t.add_column(col)
         for row in rows:
