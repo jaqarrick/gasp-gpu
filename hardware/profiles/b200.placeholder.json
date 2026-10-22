@@ -1,4 +1,7 @@
 {
+    "architecture": "blackwell",
+    "chip": "b200",
+    "arch": "sm_100",
     "spec": {
         "warp_size": 32,
         "simd_width": 32,
