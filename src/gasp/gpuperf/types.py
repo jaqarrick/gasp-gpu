@@ -27,8 +27,11 @@ class OccupancyParams:
     warps_per_block: int  # ceil(block_size / warp_size)
     blocks_per_sm: int  # from resource limits
     num_reps: int  # scheduling rounds
+    # actually lets calculate these two inside the module
     itilp: float  # min(ilp * N, itilp_max)
     itmlp: float  # min(mlp * mwp_cp, mwp_peak_bw)
+
+    # need to compute in module as well
     cwp: float  # Mem_L / (comp_cycles / mem_inst_count)
     mwp: float  # min(Mem_L / delta, N)
     mwp_cp: float  # min(max(1, cwp - 1), mwp)
@@ -50,7 +53,7 @@ class HardwareParameters:
         int  # fudge factor- GPUPerf uses 64 "based on microarchitecture simulations"
     )
     dram_latency: float
-    cache_hit_latency: float
+    cache_hit_latency: float  # todo: distinguish L1 and L2
     average_inst_latency: float
     bank_penalty: float
     launch_overhead: float

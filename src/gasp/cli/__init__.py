@@ -5,12 +5,14 @@ import sys
 
 from gasp import __version__
 from gasp.common.constants import GPU_TO_ARCH
-from gasp.cuda import CUDAExtractor
+from gasp.cuda_toolkit import CUDAExtractor
 from gasp.logger import Logger
+from gasp.occupancy import OccupancyInput, calculate_occupancy
 from gasp.pico import PicoInput, perform_pico_analysis
 
 from .constants import DEFAULT_BLOCK_SIZE, DEFAULT_PROBLEM_SIZE
 from .types import Args
+from .utils import load_hardware_profile
 
 
 def cu_file(path: str) -> str:
@@ -106,8 +108,44 @@ def main() -> None:
 
     extractor = CUDAExtractor(input_file, arch, logger)
     result = extractor.process()
+    resources = result["resources"]
 
-    print(result["resources"])
+    # print(result["resources"])
+    # {'_Z9addvectorPiS_S_i:': {'reg': 12, 'shared': 0, 'stack': 0, 'local': 0}}
+    # for now we assume a single kernel
+    kernel = next(iter(resources.values()))
+    registers_per_thread = kernel["reg"]
+    shared_memory_per_block = kernel["shared"]
+
+    hp = load_hardware_profile(gpu, logger)
+    occupancy_results = calculate_occupancy(
+        OccupancyInput(
+            block_size=block_size,
+            grid_size=grid_size,
+            warp_size=hp.warp_size,
+            sms_per_gpu=hp.sms_per_gpu,
+            max_warps_per_sm=hp.max_warps_per_sm,
+            max_blocks_per_sm=hp.max_blocks_per_sm,
+            max_registers_per_sm=hp.max_registers_per_sm,
+            max_shared_mem_per_sm_bytes=hp.max_shared_mem_per_sm_bytes,
+            dram_latency_cycles=hp.dram_latency_cycles,
+            departure_delay_cycles=hp.departure_delay_cycles,
+            registers_per_thread=registers_per_thread,
+            shared_memory_per_block=shared_memory_per_block,
+        ),
+        logger=logger,
+    )
+    logger.table(
+        "Occupancy",
+        ["Parameter", "Value"],
+        [
+            ["Active Warps/SM", str(occupancy_results.active_warps_per_sm)],
+            ["Total Warps", str(occupancy_results.total_warps)],
+            ["Active SMs", str(occupancy_results.active_sms)],
+            ["Num Reps", str(occupancy_results.num_reps)],
+            ["MWP", f"{occupancy_results.mwp:.2f}"],
+        ],
+    )
 
     pico_results = perform_pico_analysis(
         PicoInput(
@@ -126,7 +164,7 @@ def main() -> None:
         sys.exit(1)
     logger.table(
         "PICO Results",
-        ["Name", "Value"],
+        ["Result", "Value"],
         [
             ["Bank Conflicts", str(pico_results.bank_conflict_count)],
             ["Uncoalesced Count", str(pico_results.uncoalesced_count)],
