@@ -2,15 +2,14 @@ from pathlib import Path
 
 import pytest
 
-from gasp.cfg import CFGEdge
-from gasp.cfg.cfg_parser import parse_cfg
+from gasp.cfg import CFGEdge, gen_cfg_from_raw
 
 # raw cfg file to compare against
 FIXTURE = Path(__file__).parent / "fixtures" / "vecadd.bbcfg.dot"
 
 
 def test_parse_vecadd_bbcfg_fixture():
-    graph = parse_cfg(FIXTURE.read_text())
+    graph = gen_cfg_from_raw(FIXTURE.read_text())
 
     assert set(graph.nodes) == {"_Z6vecaddPfS_S_i", "BB0"}
     assert "ISETP.GE.AND" in graph.nodes["_Z6vecaddPfS_S_i"].label
@@ -40,7 +39,7 @@ digraph f {
 }
 """
 
-    graph = parse_cfg(raw_cfg)
+    graph = gen_cfg_from_raw(raw_cfg)
 
     assert len(graph.edges) == 1
     edge = graph.edges[0]
@@ -63,7 +62,7 @@ digraph f {
 )
 def test_parse_invalid_graph_raises(raw_cfg):
     with pytest.raises(ValueError):
-        parse_cfg(raw_cfg)
+        gen_cfg_from_raw(raw_cfg)
 
 
 def test_parse_edge_to_undefined_node_raises():
@@ -76,7 +75,7 @@ digraph f {
 """
 
     with pytest.raises(ValueError, match="undefined target node 'BB0'"):
-        parse_cfg(raw_cfg)
+        gen_cfg_from_raw(raw_cfg)
 
 
 def test_parse_unrecognized_line_raises():
@@ -87,4 +86,4 @@ this is not valid nvdisasm output
 """
 
     with pytest.raises(ValueError, match="unrecognized"):
-        parse_cfg(raw_cfg)
+        gen_cfg_from_raw(raw_cfg)

@@ -1,6 +1,32 @@
 import re
 
-from . import CFGEdge, CFGNode, ControlFlowGraph
+# organize CFG into Nodes and Edges (based on the structure of the DOT file
+# in tests/fixtures/vecadd.bbcfg.dot).
+from dataclasses import dataclass
+
+
+@dataclass
+class CFGNode:
+    id: str
+    label: str
+
+
+@dataclass
+class CFGEdge:
+    source: str
+    source_port: str | None
+    source_compass: str | None
+    target: str
+    target_port: str | None
+    target_compass: str | None
+    attributes: str | None
+
+
+@dataclass
+class ControlFlowGraph:
+    nodes: dict[str, CFGNode]
+    edges: list[CFGEdge]
+
 
 # this parser is scoped to the raw cfg input in tests/fixtures/vecadd.bbcfg.dot
 # structure per node (specifically bbcfgs): NodeID \l label \l edges
@@ -21,7 +47,7 @@ _EDGE = re.compile(
 )
 
 
-def parse_cfg(raw_cfg: str) -> ControlFlowGraph:
+def gen_cfg_from_raw(raw_cfg: str) -> ControlFlowGraph:
     # extract lines and prune to verify input shape
     lines = raw_cfg.splitlines()
     trimmed_lines = [line.strip() for line in lines if line.strip()]
