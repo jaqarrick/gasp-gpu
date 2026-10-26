@@ -46,6 +46,9 @@ class HardwareProfile:
     fp64_inst_latency_cycles: int
     dram_bandwidth_bytes_per_cycle: int
     clock_rate_ghz: float
+    shared_mem_load_latency_cycles: int
+    shared_mem_store_latency_cycles: int
+    const_mem_latency_cycles: int
 
 
 def load_hardware_profile(gpu: str, logger: Logger):
