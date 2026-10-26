@@ -4,6 +4,8 @@ import subprocess
 import sys
 from typing import TypedDict
 
+from gasp.cfg import ControlFlowGraph
+from gasp.cfg.cfg_parser import parse_cfg
 from gasp.logger import Logger
 
 REQUIRED: list[str] = ["nvcc", "nvdisasm", "cuobjdump"]
@@ -15,6 +17,7 @@ class KernelInfo(TypedDict):
     raw_sass: str
     raw_cfg: str
     resources: ResourceUsage
+    cfg: ControlFlowGraph
 
 
 class CUDAExtractor:
@@ -58,13 +61,13 @@ class CUDAExtractor:
 
     def get_cfg(self) -> str:
         result = subprocess.run(
-            ["nvdisasm", "-cfg", self.cubin_path],
+            ["nvdisasm", "-bbcfg", self.cubin_path],
             capture_output=True,
             check=False,
             text=True,
         )
         if result.returncode != 0:
-            self.logger.error(f"nvdisasm -cfg failed:\n{result.stderr}")
+            self.logger.error(f"nvdisasm -bbcfg failed:\n{result.stderr}")
             sys.exit(1)
         return result.stdout
 
@@ -102,13 +105,15 @@ class CUDAExtractor:
         self.logger.info("Extracting raw SASS")
         sass = self.disassemble()
         self.logger.info("Extracting raw CFG")
-        cfg = self.get_cfg()
+        raw_cfg = self.get_cfg()
+        cfg = parse_cfg(raw_cfg)
         self.logger.info("Extracting kernel resource usage")
         resources = self.get_resource_usage()
         kernel_info: KernelInfo = {
             "raw_sass": sass,
-            "raw_cfg": cfg,
+            "raw_cfg": raw_cfg,
             "resources": resources,
+            "cfg": cfg,
         }
 
         return kernel_info

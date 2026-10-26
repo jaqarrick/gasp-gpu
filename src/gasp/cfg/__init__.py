@@ -18,3 +18,30 @@ sfu_inst_count: int
 mem_inst_count: int
 sync_inst_count
 """
+
+# organize CFG into Nodes and Edges (based on the structure of the DOT file
+# in tests/fixtures/vecadd.bbcfg.dot).
+from dataclasses import dataclass
+
+
+@dataclass
+class CFGNode:
+    id: str
+    label: str
+
+
+@dataclass
+class CFGEdge:
+    source: str
+    source_port: str | None
+    source_compass: str | None
+    target: str
+    target_port: str | None
+    target_compass: str | None
+    attributes: str | None
+
+
+@dataclass
+class ControlFlowGraph:
+    nodes: dict[str, CFGNode]
+    edges: list[CFGEdge]
