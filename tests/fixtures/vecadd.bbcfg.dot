@@ -1,0 +1,11 @@
+digraph f {
+subgraph "cluster__Z6vecaddPfS_S_i" {
+node [fontname="Courier",fontsize=10,shape=Mrecord];
+"_Z6vecaddPfS_S_i"
+[label="{<entry>	.global		_Z6vecaddPfS_S_i\l	.type		_Z6vecaddPfS_S_i,@function\l	.size		_Z6vecaddPfS_S_i,(.L_x_1\ -\ _Z6vecaddPfS_S_i)\l	.other		_Z6vecaddPfS_S_i,\<no\ object\>\l_Z6vecaddPfS_S_i:\l.text._Z6vecaddPfS_S_i:\l\ \ MOV\ R1,\ c\[0x0\]\[0x28\]\ ;\l\ \ S2R\ R6,\ SR_CTAID.X\ ;\l\ \ S2R\ R3,\ SR_TID.X\ ;\l\ \ IMAD\ R6,\ R6,\ c\[0x0\]\[0x0\],\ R3\ ;\l\ \ ISETP.GE.AND\ P0,\ PT,\ R6,\ c\[0x0\]\[0x178\],\ PT\ ;\l|<exit0>\ \ @P0\ EXIT\ ;\l}"]
+"_Z6vecaddPfS_S_i":exit0:s -> "BB0":entry:n [style=solid];
+node [fontname="Courier",fontsize=10,shape=Mrecord];
+"BB0"
+[label="{<entry>\ \ HFMA2.MMA\ R7,\ -RZ,\ RZ,\ 0,\ 2.384185791015625e-07\ ;\l\ \ ULDC.64\ UR4,\ c\[0x0\]\[0x118\]\ ;\l\ \ IMAD.WIDE\ R4,\ R6,\ R7,\ c\[0x0\]\[0x168\]\ ;\l\ \ IMAD.WIDE\ R2,\ R6.reuse,\ R7.reuse,\ c\[0x0\]\[0x160\]\ ;\l\ \ LDG.E\ R4,\ \[R4.64\]\ ;\l\ \ LDG.E\ R3,\ \[R2.64\]\ ;\l\ \ IMAD.WIDE\ R6,\ R6,\ R7,\ c\[0x0\]\[0x170\]\ ;\l\ \ FADD\ R9,\ R4,\ R3\ ;\l\ \ STG.E\ \[R6.64\],\ R9\ ;\l|<exit0>\ \ EXIT\ ;\l}"]
+}
+}
