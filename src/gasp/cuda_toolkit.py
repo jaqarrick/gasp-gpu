@@ -18,10 +18,19 @@ class KernelInfo(TypedDict):
 
 
 class CUDAExtractor:
-    def __init__(self, input_file: str, arch: str, logger: Logger) -> None:
+    def __init__(
+        self,
+        input_file: str,
+        arch: str,
+        logger: Logger,
+        include_dirs: list[str] | None = None,
+        extra_flags: list[str] | None = None,
+    ) -> None:
         self.input_file = input_file
         self.logger = logger
         self.arch = arch
+        self.include_dirs = include_dirs or []
+        self.extra_flags = extra_flags or []
         self.cubin_path = input_file.replace(".cu", ".cubin")
 
     def check_packages(self) -> None:
@@ -36,6 +45,8 @@ class CUDAExtractor:
             "nvcc",
             "-cubin",
             f"-arch={self.arch}",
+            *(f"-I{d}" for d in self.include_dirs),
+            *self.extra_flags,
             self.input_file,
             "-o",
             self.cubin_path,

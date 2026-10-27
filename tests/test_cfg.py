@@ -5,7 +5,7 @@ import pytest
 from gasp.cfg import CFGEdge, gen_cfg_from_raw
 
 # raw cfg file to compare against
-FIXTURE = Path(__file__).parent / "fixtures" / "vecadd.bbcfg.dot"
+FIXTURE = Path(__file__).parent / "fixtures" / "cfg" / "vecadd.bbcfg.dot"
 
 
 def test_parse_vecadd_bbcfg_fixture():

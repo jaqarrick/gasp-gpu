@@ -1,7 +1,7 @@
 import re
 
 # organize CFG into Nodes and Edges (based on the structure of the DOT file
-# in tests/fixtures/vecadd.bbcfg.dot).
+# in tests/fixtures/cfg/vecadd.bbcfg.dot).
 from dataclasses import dataclass
 
 
@@ -28,7 +28,7 @@ class ControlFlowGraph:
     edges: list[CFGEdge]
 
 
-# this parser is scoped to the raw cfg input in tests/fixtures/vecadd.bbcfg.dot
+# this parser is scoped to the raw cfg input in tests/fixtures/cfg/vecadd.bbcfg.dot
 # structure per node (specifically bbcfgs): NodeID \l label \l edges
 
 # regexes the raw bbcfg input

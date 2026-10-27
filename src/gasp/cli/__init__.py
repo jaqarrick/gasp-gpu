@@ -1,13 +1,16 @@
 import argparse
 import math
 import os
+import shlex
 import sys
 
 from gasp import __version__
+from gasp.cfg import gen_cfg_from_raw
 from gasp.common.constants import GPU_TO_ARCH
 from gasp.cuda_toolkit import CUDAExtractor
 from gasp.logger import Logger
 from gasp.occupancy import OccupancyInput, calculate_occupancy
+from gasp.parser import get_parser
 from gasp.pico import PicoInput, perform_pico_analysis
 
 from .constants import DEFAULT_BLOCK_SIZE, DEFAULT_PROBLEM_SIZE
@@ -47,6 +50,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--problem-size", type=int, default=None, help="Size of the input"
     )
+    parser.add_argument(
+        "-I",
+        "--include-dir",
+        action="append",
+        default=[],
+        help="Include directory passed to nvcc (repeatable)",
+    )
+    parser.add_argument(
+        "--nvcc-flags",
+        default=None,
+        help='Extra flags passed to nvcc, e.g. "--use_fast_math -Xptxas -dlcm=cg"',
+    )
 
     return parser
 
@@ -62,6 +77,8 @@ def main() -> None:
     grid_size = args.grid_size
     block_size = args.block_size
     problem_size = args.problem_size
+    include_dirs = args.include_dir
+    nvcc_flags = shlex.split(args.nvcc_flags) if args.nvcc_flags else []
 
     logger = Logger(verbose)
     logger.info("Verbose mode enabled")
@@ -106,14 +123,22 @@ def main() -> None:
 
     logger.info(f"Extracting SASS and resource usage from {input_file}")
 
-    extractor = CUDAExtractor(input_file, arch, logger)
+    extractor = CUDAExtractor(
+        input_file,
+        arch,
+        logger,
+        include_dirs=include_dirs,
+        extra_flags=nvcc_flags,
+    )
     result = extractor.process()
     resources = result["resources"]
 
+    cfg = gen_cfg_from_raw(raw_cfg=result["raw_cfg"])
+    # print_cfg(cfg)
     # print(result["resources"])
     # {'_Z9addvectorPiS_S_i:': {'reg': 12, 'shared': 0, 'stack': 0, 'local': 0}}
     # for now we assume a single kernel
-    kernel = next(iter(resources.values()))
+    kernel_name, kernel = next(iter(resources.items()))
     registers_per_thread = kernel["reg"]
     shared_memory_per_block = kernel["shared"]
 
@@ -161,17 +186,25 @@ def main() -> None:
 
     if pico_results.error:
         logger.error("PICO error")
-        sys.exit(1)
-    logger.table(
-        "PICO Results",
-        ["Result", "Value"],
-        [
-            ["Bank Conflicts", str(pico_results.bank_conflict_count)],
-            ["Uncoalesced Count", str(pico_results.uncoalesced_count)],
-            ["Active Threads", str(pico_results.active_threads)],
-            ["Memory Access Count", str(pico_results.memory_accesses_count)],
-        ],
-    )
+        logger.info("Continuing without PICO results")
+    else:
+        logger.table(
+            "PICO Results",
+            ["Result", "Value"],
+            [
+                ["Bank Conflicts", str(pico_results.bank_conflict_count)],
+                ["Uncoalesced Count", str(pico_results.uncoalesced_count)],
+                ["Active Threads", str(pico_results.active_threads)],
+                ["Memory Access Count", str(pico_results.memory_accesses_count)],
+            ],
+        )
+
+    sass_parser = get_parser(cfg=cfg, kernel_name=kernel_name, arch=arch, logger=logger)
+
+    instructions = sass_parser.parse()
+
+    logger.info("SASS has been parsed")
+    logger.info(f"{instructions.values()}")
 
 
 if __name__ == "__main__":

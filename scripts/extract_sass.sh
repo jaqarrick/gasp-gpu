@@ -13,6 +13,8 @@ usage() {
     echo "  --arch ARCH        Target architecture (default: sm_80)"
     echo "                     Options: sm_80, sm_86, sm_89, sm_90, sm_100"
     echo "  --out-dir, -od DIR Output directory (default: same as input file)"
+    echo "  -I DIR             Add an include directory (repeatable)"
+    echo "  --nvcc-flags FLAGS Extra flags passed to nvcc, e.g. \"--use_fast_math -Xptxas -dlcm=cg\""
     echo "  --sass             Generate SASS disassembly"
     echo "  --cfg              Generate basic block CFG (DOT format)"
     echo "  --res              Generate resource usage"
@@ -30,12 +32,15 @@ DO_SASS=false
 DO_CFG=false
 DO_RES=false
 KEEP_CUBIN=false
+NVCC_ARGS=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -h|--help)     usage ;;
         --arch)        ARCH="$2"; shift 2 ;;
         --out-dir|-od) OUT_DIR="$2"; shift 2 ;;
+        -I)            NVCC_ARGS+=("-I$2"); shift 2 ;;
+        --nvcc-flags)  read -ra FLAGS <<< "$2"; NVCC_ARGS+=("${FLAGS[@]}"); shift 2 ;;
         --sass)        DO_SASS=true; shift ;;
         --cfg)         DO_CFG=true; shift ;;
         --res)         DO_RES=true; shift ;;
@@ -75,7 +80,7 @@ for tool in nvcc nvdisasm cuobjdump; do
 done
 
 echo "Compiling ${INPUT} for ${ARCH}..."
-nvcc -cubin -arch="${ARCH}" "${INPUT}" -o "${CUBIN}"
+nvcc -cubin -arch="${ARCH}" "${NVCC_ARGS[@]}" "${INPUT}" -o "${CUBIN}"
 
 OUTPUTS=()
 

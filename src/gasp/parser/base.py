@@ -33,7 +33,7 @@ class SASSParser(ABC):
 
     def parse(self) -> dict[str, list[SASSInstruction]]:
         nodes = self.cfg.nodes
-        result = dict[str, list[SASSInstruction]] = {}
+        result: dict[str, list[SASSInstruction]] = {}
         for node_id, node in nodes.items():
             raw_instructions = self._trim_raw_instruction(node.label)
             result[node_id] = [self._parse_instruction(raw) for raw in raw_instructions]
@@ -116,8 +116,7 @@ class SASSParser(ABC):
         )
 
     def _is_op_needed(self, op: str) -> bool:
-        # Constant value registers not needed
-        if op in ("RZ", "URZ", "PT", "UPT"):
+        if op in ("RZ", "URZ", "PT", "UPT", "SRZ"):
             return False
         # same goes for special registers
         if op.startswith("SR_"):
@@ -143,7 +142,7 @@ class SASSParser(ABC):
     def _strip_operand(self, raw: str) -> str:
         op = raw.strip()
         op = op.strip("|")
-        op = op.lstrip("-~")
+        op = op.lstrip("-~!")
         op = re.sub(r"\.(reuse|64)$", "", op)
         return op
 
@@ -152,7 +151,7 @@ class SASSParser(ABC):
         inner = raw.strip("[]")
         # account for [R2+0x16]
         for tok in re.split(r"\+", inner):
-            tok = re.sub(r"\.\d+$", "", tok.strip())
+            tok = re.sub(r"\.X?\d+$", "", tok.strip())
             tok = self._strip_operand(tok)
             if re.match(r"^U?R\d+$", tok) and self._is_op_needed(tok):
                 regs.add(tok)
@@ -194,8 +193,9 @@ class SASSParser(ABC):
 
             # get registers from address (arch-dependent syntax)
             regs = self._parse_operand_address(op)
-            if regs:
+            if regs is not None:
                 src_registers.update(regs)
+                continue
 
             if re.match(r"^U?R\d+$|^U?P\d+$", op):
                 if is_store_op:
