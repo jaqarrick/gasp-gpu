@@ -129,3 +129,31 @@ def gen_cfg_from_raw(raw_cfg: str) -> ControlFlowGraph:
             raise ValueError(f"edge references undefined target node {edge.target!r}")
 
     return ControlFlowGraph(nodes=nodes, edges=edges)
+
+
+def print_cfg(cfg: ControlFlowGraph) -> None:
+    """Print a ControlFlowGraph for debugging."""
+    print(f"=== CFG: {len(cfg.nodes)} nodes, {len(cfg.edges)} edges ===\n")
+
+    for node_id, node in cfg.nodes.items():
+        raw = node.label.replace("\\l", "\n")
+        raw = raw.replace("\\\\", "\x00")
+        raw = re.sub(r"\\(.)", r"\1", raw)
+        raw = raw.replace("\x00", "\\")
+        lines = [l.strip() for l in raw.splitlines() if l.strip()]
+
+        print(f"[{node_id}] ({len(lines)} lines)")
+        for line in lines:
+            if line in ("{", "}"):
+                print(line)
+            else:
+                print(f"    {line}")
+        print()
+
+    for edge in cfg.edges:
+        attr = f"  [{edge.attributes}]" if edge.attributes else ""
+        port_src = f":{edge.source_port}" if edge.source_port else ""
+        port_tgt = f":{edge.target_port}" if edge.target_port else ""
+        print(f"  {edge.source}{port_src} -> {edge.target}{port_tgt}{attr}")
+
+    print()
