@@ -246,7 +246,7 @@ def test_bracket_parse_instruction(line, expected, logger):
     parser = make_parser("sm_80", logger)
 
     assert parser._parse_instruction(line) == expected
-    logger.warn.assert_not_called()
+    logger.warning.assert_not_called()
 
 
 @pytest.mark.parametrize("arch", ["sm_90", "sm_100"])
@@ -255,7 +255,7 @@ def test_descriptor_parse_instruction(arch, line, expected, logger):
     parser = make_parser(arch, logger)
 
     assert parser._parse_instruction(line) == expected
-    logger.warn.assert_not_called()
+    logger.warning.assert_not_called()
 
 
 @pytest.mark.parametrize("line, expected", SM100_CASES)
@@ -263,7 +263,7 @@ def test_sm100_parse_instruction(line, expected, logger):
     parser = make_parser("sm_100", logger)
 
     assert parser._parse_instruction(line) == expected
-    logger.warn.assert_not_called()
+    logger.warning.assert_not_called()
 
 
 def test_srz_is_not_a_register(logger):
@@ -272,14 +272,14 @@ def test_srz_is_not_a_register(logger):
     assert parsed.category == OpCategory.MISC
     assert "SRZ" not in parsed.src_registers
     assert "R16" in parsed.dest_registers
-    logger.warn.assert_not_called()
+    logger.warning.assert_not_called()
 
 
 def test_unknown_opcode_is_categorized_unknown(logger):
     parsed = make_parser("sm_80", logger)._parse_instruction("FOO R1, R2")
 
     assert parsed.category == OpCategory.UNKNOWN
-    logger.warn.assert_called()
+    logger.warning.assert_called()
 
 
 # ---------------------------------------------------------------------------
@@ -309,7 +309,7 @@ def test_fixture_instructions_parse_cleanly(arch, path, logger):
         parsed = parser._parse_instruction(line)
         assert parsed.category != OpCategory.UNKNOWN, line
 
-    logger.warn.assert_not_called()
+    logger.warning.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
@@ -367,4 +367,4 @@ def test_parse_sgemm_cfg(arch, logger):
     parsed_ffma = sum(i.opcode == "FFMA" for block in result.values() for i in block)
     assert parsed_ffma == expected_ffma > 0
 
-    logger.warn.assert_not_called()
+    logger.warning.assert_not_called()
