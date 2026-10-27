@@ -3,6 +3,7 @@ VENV := .venv
 PIP := $(VENV)/bin/pip
 PY := PYTHONPATH=src $(VENV)/bin/python
 IMAGE := gasp
+PLATFORM := linux/amd64
 ARGS ?=
 
 .PHONY: all build install run test lint lint-fix format pre-commit clean docker-clean docker-run help
@@ -34,10 +35,10 @@ run:
 
 # FOR DOCKER
 build:
-	docker build -t $(IMAGE) .
+	docker build --platform $(PLATFORM) -t $(IMAGE) .
 
 docker-run:
-	docker run --rm \
+	docker run --rm --platform $(PLATFORM) \
 		-v $(PWD)/benchmarks:/workspace/benchmarks \
 		-v $(PWD)/hardware:/workspace/hardware \
 		$(IMAGE) $(ARGS)
