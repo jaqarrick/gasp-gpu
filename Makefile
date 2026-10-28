@@ -9,11 +9,13 @@ ARGS ?=
 .PHONY: all build install run test lint lint-fix format pre-commit clean docker-clean docker-run help
 
 $(VENV):
-	$(PYTHON) -m venv $(VENV)
+	PYTHON=$(PYTHON) ./scripts/init_python.sh
 
 install: $(VENV)
 	$(PIP) install -r requirements.txt -r requirements-dev.txt
 	$(VENV)/bin/pre-commit install
+	./scripts/install_faial.sh
+	./scripts/check_requirements.sh
 
 lint:
 	$(PY) -m ruff check src/
