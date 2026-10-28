@@ -16,7 +16,7 @@ from gasp.parser.types import OpCategory, SASSInstruction
 FIXTURES = Path(__file__).parent / "fixtures"
 SASS_DIR = FIXTURES / "sass"
 CFG_DIR = FIXTURES / "cfg"
-SGEMM = "paraboil/sgemm"
+SGEMM = "parboil/sgemm"
 
 # one instruction per match: "/*0040*/   IMAD R6, R6, c[0x0][0x0], R3 ;"
 # single-line only, and must start with a predicate or opcode, so data-section
