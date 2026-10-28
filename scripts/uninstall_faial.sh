@@ -27,7 +27,8 @@ done
 
 # Sanity-check the prefix before rm -rf so a misset FAIAL_PREFIX can't wipe an unrelated directory
 if [ -d "$FAIAL_PREFIX" ]; then
-  if [ -x "$FAIAL_PREFIX/bin/faial-cost" ] && [ -d "$FAIAL_PREFIX/lib" ]; then
+  if { [ -x "$FAIAL_PREFIX/bin/faial-cost" ] && [ -d "$FAIAL_PREFIX/lib" ]; } \
+    || [ -f "$FAIAL_PREFIX/faial-tools.sif" ]; then
     rm -rf "$FAIAL_PREFIX"
     echo "Removed $FAIAL_PREFIX"
     removed=1
