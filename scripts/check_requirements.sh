@@ -18,19 +18,16 @@ fail() {
 hint() { echo "         -> $*"; }
 
 echo "Python"
-if command -v python3 > /dev/null; then
-  version="$(python3 -c 'import sys; print("%d.%d" % sys.version_info[:2])')"
-  if python3 -c "import sys; sys.exit(sys.version_info[:2] < tuple(map(int, '$MIN_PYTHON'.split('.'))))"; then
-    ok "python3 $version"
-  else
-    fail "python3 $version (need >= $MIN_PYTHON)"
-  fi
-else
-  fail "python3 not found"
-fi
-
+# gasp runs from the venv, so its interpreter is the one that matters, not the
+# system python3 (which may be older, e.g. when the venv came from a module)
 if [ -x "$VENV/bin/python" ]; then
-  ok "virtualenv at $VENV"
+  version="$("$VENV/bin/python" -c 'import sys; print("%d.%d" % sys.version_info[:2])')"
+  if "$VENV/bin/python" -c "import sys; sys.exit(sys.version_info[:2] < tuple(map(int, '$MIN_PYTHON'.split('.'))))"; then
+    ok "virtualenv at $VENV (python $version)"
+  else
+    fail "virtualenv at $VENV uses python $version (need >= $MIN_PYTHON)"
+    hint "./scripts/init_python.sh"
+  fi
   # requirements.txt lines look like "name>=x.y"; check each distribution is installed
   while read -r req; do
     name="$(echo "$req" | sed -E 's/[[:space:]]*#.*//; s/[<>=!~;[ ].*//')"
@@ -44,7 +41,7 @@ if [ -x "$VENV/bin/python" ]; then
   done < "$REPO/requirements.txt"
 else
   fail "virtualenv not found at $VENV"
-  hint "make install"
+  hint "./scripts/init_python.sh && make install"
 fi
 
 echo "CUDA toolkit"
