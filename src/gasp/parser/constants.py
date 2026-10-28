@@ -181,6 +181,40 @@ common_ops = {
     "SUST": OpCategory.OTHER_MEM,  # Surface Store
 }
 
+# Registers per operand implied by a size modifier
+# e.g. LDS.128 R12, [R0] writes R12-R15, STG.E.64 [R2.64], R4 reads R4 + R5
+# .WIDE is handled separately, since only some of its operands are 64-bit
+SIZE_MODIFIER_TO_REG_COUNT = {
+    "64": 2,
+    "128": 4,
+}
+
+CONVERSION_OPCODES = {"F2F", "F2I", "I2F", "I2I", "FRND"}
+
+# In conversion operations the type modifiers specify the size of the dst/src
+# registers. With two types the destination comes first:
+# F2F.F64.F32 R2, R4 converts 32-bit R4 to 64-bit in R2 + R3
+FLOAT_TYPE_MODIFIERS = {"F16", "BF16", "F32", "F64"}
+
+INT_TYPE_MODIFIERS = {"S8", "U8", "S16", "U16", "S32", "U32", "S64", "U64"}
+
+WIDE_TYPE_MODIFIERS = {"F64", "S64", "U64"}
+
+# Number of carry-out predicate slots right after the destination
+# A predicate there is written, not read: IADD3 R2, P0, PT, R4, R6, RZ writes P0
+# The carry-in comes last and is read: IADD3.X R3, PT, PT, R5, R7, RZ, P0, !PT
+CARRY_OUT_SLOTS = {
+    "IADD3": 2,
+    "UIADD3": 2,
+    "LEA": 1,
+    "ULEA": 1,
+}
+
+# TODO: Size conversion for matrix load/store and MMA operands
+# We will not implement in version 1, since we are not targeting tensor cores
+# For now, log a warning if they show up (along with OpCategory.TENSOR)
+MATRIX_MEMORY_OPCODES = {"LDSM", "STSM"}
+
 
 sm80_ops = {
     "LDGSTS": OpCategory.ASYNC_COPY,  # Asynchronous Global to Shared Memcopy

@@ -22,14 +22,11 @@ class DescriptorSASSParser(SASSParser):
         return None
 
     def _strip_descriptor_address(self, raw: str) -> set[str]:
-        # desc[UR2][R4.64] extract UR2, R4
+        # desc[UR2][R4.64] extract UR2, R4 + R5
         regs = set()
         matches = re.findall(r"\[([^\]]+)\]", raw)
         for m in matches:
-            m = re.sub(r"\.\d+$", "", m.strip())
-            m = self._strip_operand(m)
-            if re.match(r"^U?R\d+$", m) and self._is_op_needed(m):
-                regs.add(m)
+            regs.update(self._address_registers(m))
         return regs
 
     def _strip_gdescriptor_address(self, raw: str) -> set[str]:
