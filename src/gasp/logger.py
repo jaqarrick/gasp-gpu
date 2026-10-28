@@ -19,7 +19,7 @@ class Logger:
     def error(self, msg: str) -> None:
         self.err.print(f"[red]error[/] {msg}")
 
-    def warn(self, msg: str) -> None:
+    def warning(self, msg: str) -> None:
         self.err.print(f"[yellow]warn[/] {msg}")
 
     def table(
