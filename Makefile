@@ -9,7 +9,7 @@ ARGS ?=
 .PHONY: all build install run test lint lint-fix format pre-commit clean docker-clean docker-run help
 
 $(VENV):
-	$(PYTHON) -m venv $(VENV)
+	PYTHON=$(PYTHON) ./scripts/init_python.sh
 
 install: $(VENV)
 	$(PIP) install -r requirements.txt -r requirements-dev.txt
