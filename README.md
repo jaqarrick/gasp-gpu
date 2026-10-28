@@ -21,6 +21,8 @@ source .venv/bin/activate
 make install
 ```
 
+`make install` installs the Python dependencies, then runs `scripts/install_faial.sh` to fetch faial (pico) and `scripts/check_requirements.sh` to verify the setup. faial is installed to `~/.local/share/faial` with wrappers in `~/.local/bin` (override with `FAIAL_PREFIX` / `BIN_DIR`); it is supported on Linux x86-64 and macOS arm64, and `libgmp10` must be installed on Linux. Run `scripts/uninstall_faial.sh` to remove it.
+
 ### Docker (recommended)
 
 ```bash

@@ -14,6 +14,8 @@ $(VENV):
 install: $(VENV)
 	$(PIP) install -r requirements.txt -r requirements-dev.txt
 	$(VENV)/bin/pre-commit install
+	./scripts/install_faial.sh
+	./scripts/check_requirements.sh
 
 lint:
 	$(PY) -m ruff check src/
