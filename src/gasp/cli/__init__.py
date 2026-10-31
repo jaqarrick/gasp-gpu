@@ -8,14 +8,21 @@ from gasp import __version__
 from gasp.cfg import gen_cfg_from_raw
 from gasp.common.constants import GPU_TO_ARCH
 from gasp.cuda_toolkit import CUDAExtractor
+from gasp.dependency import analyze
+from gasp.gpuperf.types import HardwareParameters, LaunchParameters
 from gasp.logger import Logger
 from gasp.occupancy import OccupancyInput, calculate_occupancy
 from gasp.parser import get_parser
 from gasp.pico import PicoInput, perform_pico_analysis
+from gasp.predict import PredictionInput, predict
 
-from .constants import DEFAULT_BLOCK_SIZE, DEFAULT_PROBLEM_SIZE
+from .constants import (
+    DEFAULT_BLOCK_SIZE,
+    DEFAULT_LOOP_ITERATIONS,
+    DEFAULT_PROBLEM_SIZE,
+)
 from .types import Args
-from .utils import load_hardware_profile
+from .utils import build_latency_table, load_hardware_profile
 
 
 def cu_file(path: str) -> str:
@@ -51,6 +58,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--problem-size", type=int, default=None, help="Size of the input"
     )
     parser.add_argument(
+        "--loop-iterations",
+        type=int,
+        default=None,
+        help="Iterations per loop in the kernel (applied to every loop)",
+    )
+    parser.add_argument(
         "-I",
         "--include-dir",
         action="append",
@@ -77,6 +90,7 @@ def main() -> None:
     grid_size = args.grid_size
     block_size = args.block_size
     problem_size = args.problem_size
+    loop_iterations = args.loop_iterations
     include_dirs = args.include_dir
     nvcc_flags = shlex.split(args.nvcc_flags) if args.nvcc_flags else []
 
@@ -101,6 +115,12 @@ def main() -> None:
             f"No argument for --grid_size supplied. Defaulting to ceil(problem_size / block_size) = {grid_size}"
         )
 
+    if loop_iterations is None:
+        logger.info(
+            f"No argument for --loop-iterations supplied. Defaulting to {DEFAULT_LOOP_ITERATIONS}"
+        )
+        loop_iterations = DEFAULT_LOOP_ITERATIONS
+
     arch = GPU_TO_ARCH.get(gpu.lower())
 
     if arch is None:
@@ -117,6 +137,7 @@ def main() -> None:
             ["Block Size", str(block_size)],
             ["Grid Size", str(grid_size)],
             ["Problem Size", str(problem_size)],
+            ["Loop Iterations", str(loop_iterations)],
             ["Verbose", str(verbose)],
         ],
     )
@@ -204,7 +225,73 @@ def main() -> None:
     instructions = sass_parser.parse()
 
     logger.info("SASS has been parsed")
-    logger.info(f"{instructions.values()}")
+
+    dependency_results = analyze(
+        cfg=cfg,
+        all_instructions=instructions,
+        ni=loop_iterations,
+        latency=build_latency_table(hp),
+        logger=logger,
+    )
+    logger.table(
+        "Dependency Analysis",
+        ["Parameter", "Value"],
+        [
+            ["ILP", f"{dependency_results.ilp:.2f}"],
+            ["MLP", f"{dependency_results.mlp:.2f}"],
+            ["Total Insts", str(dependency_results.total_inst_count)],
+            ["Mem Insts", str(dependency_results.mem_inst_count)],
+            ["SFU Insts", str(dependency_results.sfu_inst_count)],
+            ["Sync Insts", str(dependency_results.sync_inst_count)],
+        ],
+    )
+
+    prediction = predict(
+        PredictionInput(
+            dependency=dependency_results,
+            occupancy=occupancy_results,
+            pico=pico_results,
+            hardware=HardwareParameters(
+                warp_size=hp.warp_size,
+                simd_width=hp.simd_width,
+                sfu_width=hp.sfu_width,
+                departure_delay=hp.departure_delay_cycles,
+                sync_factor=hp.sync_factor_cycles,
+                dram_latency=hp.dram_latency_cycles,
+                cache_hit_latency=hp.l1_cache_hit_latency_cycles,
+                bank_penalty=hp.bank_penalty_cycles,
+                launch_overhead=hp.launch_overhead_cycles,
+                dram_bandwidth=hp.dram_bandwidth_bytes_per_cycle,
+            ),
+            launch=LaunchParameters(
+                block_size=block_size,
+                grid_size=grid_size,
+                problem_size=problem_size,
+                registers_per_thread=registers_per_thread,
+                shared_mem_per_block_bytes=shared_memory_per_block,
+            ),
+        ),
+        logger=logger,
+    )
+    logger.table(
+        "Prediction",
+        ["Parameter", "Value"],
+        [
+            ["ITILP", f"{prediction.itilp:.2f}"],
+            ["CWP", f"{prediction.cwp:.2f}"],
+            ["MWP_cp", f"{prediction.mwp_cp:.2f}"],
+            ["MWP_peak_bw", f"{prediction.mwp_peak_bw:.2f}"],
+            ["ITMLP", f"{prediction.itmlp:.2f}"],
+            ["Avg Trans/Warp", f"{prediction.average_trans_warp:.2f}"],
+            ["T_comp (cycles)", f"{prediction.t_comp:.0f}"],
+            ["T_mem (cycles)", f"{prediction.t_mem:.0f}"],
+            ["T_overlap (cycles)", f"{prediction.t_overlap:.0f}"],
+            ["T_exec (cycles)", f"{prediction.t_exec:.0f}"],
+            ["T_GPU (cycles)", f"{prediction.t_gpu:.0f}"],
+            ["T_one_thread (cycles)", f"{prediction.t_one_thread:.0f}"],
+            ["Speedup", f"{prediction.speedup:.2f}"],
+        ],
+    )
 
 
 if __name__ == "__main__":
