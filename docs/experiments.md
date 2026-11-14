@@ -63,10 +63,13 @@ make batch-experiment GPU=rtx2080ti PROFILE=hardware/runs/rtx2080ti/1_2/rtx2080t
 
 `GPU` still names the results folder.
 
+Before it starts, the batch asks you to explain briefly what the experiment does. It saves your answer in `experiment.txt`, with the date, GPU, profile, commit and configs. `DESC='<text>'` gives the answer up front, which you need when there's no terminal (for example under `nohup`).
+
 Results go in one folder per batch:
 
 ```
 experiments/results/e2e/rtx2080ti/batch_<timestamp>/
+    experiment.txt          your description, date, GPU, profile, commit, configs
     summary.txt             which configs passed and failed
     mm_n1024_b16x16/        one folder per config: result.json, run.log, metrics.json
     ...

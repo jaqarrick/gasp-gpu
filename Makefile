@@ -45,10 +45,11 @@ run:
 ablation:
 	$(PY) experiments/ablation/run_ablation.py $(ARGS)
 
-# DRY_RUN=1 only predicts (no GPU or ncu); PROFILE=<path> uses that profile instead of GPU's built-in one
+# DRY_RUN=1 only predicts (no GPU or ncu); PROFILE=<path> uses that profile instead of GPU's built-in one;
+# DESC='<text>' gives the experiment description instead of asking for it
 batch-experiment:
-	@test -n "$(GPU)" || { echo "usage: make batch-experiment GPU=<gpu> [BMKS='mm vecadd'] [DRY_RUN=1] [PROFILE=<path>]"; exit 1; }
-	./scripts/batch_experiment.sh $(if $(DRY_RUN),--dry-run) $(if $(PROFILE),--profile $(PROFILE)) $(GPU) $(BMKS)
+	@test -n "$(GPU)" || { echo "usage: make batch-experiment GPU=<gpu> [BMKS='mm vecadd'] [DRY_RUN=1] [PROFILE=<path>] [DESC='<text>']"; exit 1; }
+	./scripts/batch_experiment.sh $(if $(DRY_RUN),--dry-run) $(if $(PROFILE),--profile $(PROFILE)) $(if $(DESC),--description "$(DESC)") $(GPU) $(BMKS)
 
 batch-results:
 	@test -n "$(BATCH)" || { echo "usage: make batch-results BATCH=experiments/results/e2e/<gpu>/batch_<timestamp> [ARGS='--csv --model all']"; exit 1; }
@@ -97,7 +98,7 @@ help:
 	@echo "make run ARGS='...'              - run locally"
 	@echo "make ablation ARGS='...'         - run the ablation from a saved metrics file"
 	@echo "make test                        - run tests"
-	@echo "make batch-experiment GPU=.. [BMKS='..'] [DRY_RUN=1] [PROFILE=..] - e2e accuracy for every benchmarks/*/configs/*.toml"
+	@echo "make batch-experiment GPU=.. [BMKS='..'] [DRY_RUN=1] [PROFILE=..] [DESC='..'] - e2e accuracy for every benchmarks/*/configs/*.toml"
 	@echo "make batch-results BATCH=.. [ARGS='--csv'] - table of a batch's launches, T_GPU and speedups (GASPerf only unless ARGS='--model all')"
 	@echo "make microbenchmarks GPU=.. VERSION=.. - run HPMLL, gpu-stream and gasp-bm, merge into one profile"
 	@echo "make microbenchmarks-hpmll GPU=.. VERSION=.. - run the HPMLL benchmarks that match profile fields, build a profile"
